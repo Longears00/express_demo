@@ -1,0 +1,7 @@
+
+extends layout
+block content
+ ul.list-group
+   each article in  articles.length ? articles : ['There are no values']
+     li.list-group-item
+         a(href="/articles/"+article._id)=article.title
