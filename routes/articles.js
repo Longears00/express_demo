@@ -1,9 +1,10 @@
 
 import express from 'express';
 import Article from '../models/article';
+import User from '../models/user';
 const router = express.Router();
 
-router.get('/add', (req, res)=> {
+router.get('/add', ensureAuthenticated, (req, res)=> {
 
     res.render('add', {
         title: 'add article',
@@ -57,7 +58,7 @@ router.post('/add', (req, res)=> {
     } else {
       let article = new Article();
       article.title = req.body.title;
-      article.author = req.body.author;
+      article.author = req.user._id;
       article.body = req.body.body;
       article.save((err)=> {
           if (err)
@@ -90,10 +91,24 @@ router.get('/:id', (req, res)=> {
     if (err) {
       console.log(err);
     }else {
-      res.render('article', {
-          article: article,
+      User.findById(article.author, (err, user)=> {
+          res.render('article', {
+              author: user.name,
+              article: article,
+            });
         });
     }
   });
 });
+
+//access controls
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  } else {
+    req.flash('danger', 'please login');
+    res.redirect('/users/login');
+  }
+}
+
 module.exports = router;
